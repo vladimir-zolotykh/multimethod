@@ -20,13 +20,15 @@ class MultiMethod:
         return types.MethodType(self, instance)
 
     def __call__(self, *args, **kwargs):
-        parm_types = tuple(type(arg) for arg in args)
+        parm_types = tuple(type(arg) for arg in args[1:])
         method = self.methods[parm_types]
         return method(*args, **kwargs)
 
     def register(self, value: Callable):
         sig = inspect.signature(value)
-        parm_types = tuple(val.annotation for _, val in sig.parameters.items())
+        parm_types = tuple(
+            val.annotation for name, val in sig.parameters.items() if name != "self"
+        )
         self.methods[parm_types] = value
 
 
