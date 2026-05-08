@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # PYTHON_ARGCOMPLETE_OK
+import types
 from typing import Callable
 import inspect
 
@@ -16,14 +17,16 @@ class MultiMethod:
     def __get__(self, instance, owner=None):
         if instance is None:
             return self
-        return instance.__dict__[self.method_name]
+        return types.MethodType(self, instance)
 
     def __call__(self, *args, **kwargs):
-        sig = inspect.signature()
+        parm_types = tuple(type(arg) for arg in args)
+        method = self.methods[parm_types]
+        return method(*args, **kwargs)
 
-    def register(self, value):
-        parm_types = ()
+    def register(self, value: Callable):
         sig = inspect.signature(value)
+        parm_types = tuple(val.annotation for _, val in sig.parameters.items())
         self.methods[parm_types] = value
 
 
@@ -36,33 +39,32 @@ class MultiDict(dict):
             super().__setitem__(key, value)
             return
         if key not in self:
-            mm = MultiMethod()
-            super().__setitem__(key, mm)
+            super().__setitem__(key, value)
             return
         mm = self[key]
-        assert isinstance(mm, MultiMethod)
-        mm.register(value)
-        super().__setitem__(key, mm)
+        if isinstance(mm, MultiMethod):
+            mm.register(value)
+            super().__setitem__(key, mm)
+            return
+        else:
+            mm = MultiMethod(key)
+            mm.register(self[key])
+            mm.register(value)
+            super().__setitem__(key, mm)
+            return
 
 
 class MultiMeta(type):
-    def __new__(mcls, clsname, bases, clsdict, **kwargs):
-        pass
-
     def __prepare__(clsname, bases, **kwargs):
         return MultiDict()
 
 
-class MultiBase(metaclass=MultiMeta):
-    pass
-
-
-class Math(metaclass=MultiBase):
+class Math(metaclass=MultiMeta):
     def add(self, x: int, y: int):
         print("adding integers")
         return x + y
 
-    def add(self, x: str, y: str):
+    def add(self, x: str, y: str):  # noqa: F811
         print("concatenating strings")
         return f"{x}_{y}"
 
