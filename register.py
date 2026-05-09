@@ -21,15 +21,25 @@ class MultiMethod:
 
     def __call__(self, *args, **kwargs):
         parm_types = tuple(type(arg) for arg in args[1:])
-        method = self.methods[parm_types]
+        method, parm_defaults = self.methods[parm_types]
         return method(*args, **kwargs)
 
     def register(self, value: Callable):
         sig = inspect.signature(value)
-        parm_types = tuple(
-            val.annotation for name, val in sig.parameters.items() if name != "self"
-        )
-        self.methods[parm_types] = value
+        parm_types = []
+        parm_defaults = []
+        for name, val in sig.parameters.items():
+            if name == "self":
+                continue
+            if val.annotation is inspect._empty:
+                raise TypeError(f"{name}: must be annotated")
+            parm_types.append(val.annotation)
+            parm_defaults.append(val.default)
+
+        # parm_types = tuple(
+        #     val.annotation for name, val in sig.parameters.items() if name != "self"
+        # )
+        self.methods[tuple(parm_types)] = (value, parm_defaults)
 
 
 class MultiDict(dict):
