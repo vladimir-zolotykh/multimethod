@@ -70,8 +70,14 @@ class Math(metaclass=MultiMeta):
         print("concatenating strings")
         return f"{x}_{y}"
 
+    def factor(self, val: float, factor: float = 10.0):
+        print(f"multiplying {val} by {factor}")
+        return val * factor
+
 
 if __name__ == "__main__":
     m = Math()
     m.add(10, 12)
     m.add("one", "two")
+    m.factor(1.2, 10)
+    m.factor(1.2)
