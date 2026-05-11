@@ -9,7 +9,7 @@ import inspect
 class MultiMethod:
     def __init__(self, key: str):
         self.method_name: str = key
-        self.methods: dict[str, Callable] = {}
+        self.methods: dict[tuple[type, ...], Callable] = {}
 
     def __set_name__(self, owner, name):
         self.method_name = name
