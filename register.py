@@ -21,10 +21,6 @@ class MultiMethod:
 
     def __call__(self, *args, **kwargs):
         parm_types = tuple(type(arg) for arg in args[1:])
-        # for key in self.methods:
-        #     if parm_types == key[: len(parm_types)]:
-        #         _, parm_defaults = self.methods[key]
-        print(self.methods)
         method, _ = self.methods[parm_types]
         return method(*args, **kwargs)
 
@@ -40,12 +36,7 @@ class MultiMethod:
             parm_types.append(val.annotation)
             parm_defaults.append(val.default)
 
-        # parm_types = tuple(
-        #     val.annotation for name, val in sig.parameters.items() if name != "self"
-        # )
         self.methods[tuple(parm_types)] = (value, parm_defaults)
-        # n = len(parm_defaults)
-        # n = sum(d is not inspect._empty for d in parm_defaults)
         n = len(parm_defaults) - parm_defaults.count(inspect._empty)
         self.methods[tuple(parm_types[:-n])] = (value, parm_defaults)
 
