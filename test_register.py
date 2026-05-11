@@ -12,7 +12,7 @@ def test_multimethod_registers_functions():
     mm.register(func)
 
     assert (int, int) in mm.methods
-    assert mm.methods[(int, int)][0] is func
+    assert mm.methods[(int, int)] is func
 
 
 def test_multimethod_dispatches_by_argument_types():
