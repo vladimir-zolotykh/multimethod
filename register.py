@@ -28,12 +28,13 @@ class MultiMethod:
         sig = inspect.signature(value)
         parm_types = []
         parm_defaults = [val.default for val in sig.parameters.values()]
-        for name, val in sig.parameters.items():
-            if name == "self":
-                continue
-            if val.annotation is inspect._empty:
-                raise TypeError(f"{name}: must be annotated")
-            parm_types.append(val.annotation)
+        parm_types = [
+            val.annotation
+            for name, val in sig.parameters.items()
+            if name != "self" and val.annotation != inspect._empty
+        ]
+        if len(parm_types) != len(sig.parameters) - 1:
+            raise TypeError("All parameters must be annotated")
 
         self.methods[tuple(parm_types)] = value
         if len(parm_defaults):
