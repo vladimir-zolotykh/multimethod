@@ -37,8 +37,9 @@ class MultiMethod:
             parm_defaults.append(val.default)
 
         self.methods[tuple(parm_types)] = (value, parm_defaults)
-        n = len(parm_defaults) - parm_defaults.count(inspect._empty)
-        self.methods[tuple(parm_types[:-n])] = (value, parm_defaults)
+        if len(parm_defaults):
+            n = len(parm_defaults) - parm_defaults.count(inspect._empty)
+            self.methods[tuple(parm_types[:-n])] = (value, parm_defaults)
 
 
 class MultiDict(dict):
