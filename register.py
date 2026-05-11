@@ -27,14 +27,13 @@ class MultiMethod:
     def register(self, value: Callable):
         sig = inspect.signature(value)
         parm_types = []
-        parm_defaults = []
+        parm_defaults = [val.default for val in sig.parameters.values()]
         for name, val in sig.parameters.items():
             if name == "self":
                 continue
             if val.annotation is inspect._empty:
                 raise TypeError(f"{name}: must be annotated")
             parm_types.append(val.annotation)
-            parm_defaults.append(val.default)
 
         self.methods[tuple(parm_types)] = value
         if len(parm_defaults):
